@@ -1,0 +1,15 @@
+{
+  "name": "Mein Training",
+  "short_name": "Training",
+  "description": "Persönlicher Fitness-Tracker: Sätze, Gewichte, Zeiten und Verlauf",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#101418",
+  "theme_color": "#101418",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
