@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Mein Training v3.2 -->
+<!-- Mein Training v3.4 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -83,6 +83,18 @@
   .stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center;}
   .stat .v{font-size:22px; font-weight:700; color:var(--green);}
   .stat .l{font-size:11px; color:var(--muted); margin-top:2px;}
+  /* Statistics overlay */
+  .sum-card{background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px; margin:0 auto 16px; max-width:560px;}
+  .sum-head{font-size:19px; font-weight:700;}
+  .sum-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+  .sum-row{display:flex; gap:10px; margin-top:12px;}
+  .stats-page{font-size:13px; font-weight:600; color:var(--accent);
+    max-width:560px; margin:14px auto 8px;}
+  .stats-card{background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:12px; margin:0 auto 10px; max-width:560px;}
+  .stats-head{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .trend-badge{font-size:13px; font-weight:700; white-space:nowrap; flex:0 0 auto;}
   .empty{color:var(--muted); text-align:center; margin-top:48px; line-height:1.6;}
   /* Mode toggle + rounds */
   .mode-row{display:flex; gap:8px; margin-bottom:12px; align-items:center;}
@@ -179,11 +191,20 @@
 </div>
 
 <footer>
+  <button onclick="openStats()">📊 Statistik</button>
   <button onclick="openCalendar()">📅 Kalender</button>
   <button onclick="renamePage()">✎ Seite</button>
   <button onclick="deletePage()">🗑 Seite</button>
   <button onclick="openData()">💾 Daten</button>
 </footer>
+
+<div class="overlay" id="stats-overlay">
+  <div class="ov-head">
+    <h2>📊 Statistik</h2>
+    <button class="ov-close" onclick="closeStats()">✕ Schließen</button>
+  </div>
+  <div id="stats-body"></div>
+</div>
 
 <div class="overlay" id="cal-overlay">
   <div class="ov-head">
@@ -708,6 +729,169 @@ function renderCalendar(){
     <div class="stat"><div class="v">${monthCount}</div><div class="l">Tage diesen Monat</div></div>
     <div class="stat"><div class="v">${streak}</div><div class="l">Tage-Streak</div></div>
     <div class="stat"><div class="v">${total}</div><div class="l">Trainingstage gesamt</div></div>`;
+}
+
+// ---------- Statistics ----------
+function exMetric(ex){
+  const ses = [...ex.history].reverse();
+  if(ses.length < 2) return null;
+  const dates = ses.map(h => h.date.slice(0,10));
+  const kg = ses.map(h => Math.max(...h.sets.map(s => parseFloat(s.kg) || 0)));
+  if(kg.some(v => v > 0)) return { label:'max. kg', values:kg, dates, color:'#4dabf7', isTime:false };
+  const reps = ses.map(h => Math.max(...h.sets.map(s => parseFloat(s.reps) || 0)));
+  if(reps.some(v => v > 0)) return { label:'max. Wdh.', values:reps, dates, color:'#ffa94d', isTime:false };
+  const sec = ses.map(h => h.sets.reduce((a,s) => a + (s.sec||0), 0));
+  if(sec.some(v => v > 0)) return { label:'Zeit gesamt', values:sec, dates, color:'#51cf66', isTime:true };
+  return null;
+}
+function trendPct(vals){
+  const n = vals.length;
+  if(n < 2) return 0;
+  const xm = (n-1)/2, ym = vals.reduce((a,b) => a+b, 0)/n;
+  let num = 0, den = 0;
+  vals.forEach((v,i) => { num += (i-xm)*(v-ym); den += (i-xm)*(i-xm); });
+  const slope = den ? num/den : 0;
+  const start = ym - slope*xm;
+  if(start <= 0) return 0;
+  return (slope*(n-1))/start*100;
+}
+function openStats(){ renderStats(); document.getElementById('stats-overlay').classList.add('open'); }
+function closeStats(){ document.getElementById('stats-overlay').classList.remove('open'); }
+function renderStats(){
+  const body = document.getElementById('stats-body');
+  const items = [];
+  state.pages.forEach(p => p.exercises.forEach(ex => {
+    const m = exMetric(ex);
+    if(m) items.push({ p, ex, m, pct: trendPct(m.values) });
+  }));
+  if(!items.length){
+    body.innerHTML = '<div class="empty">Noch nicht genug Daten.<br>Speichere mindestens zwei Trainings pro Übung,<br>dann erscheinen hier Kurven und Tendenz.</div>';
+    return;
+  }
+  const days = trainedDays();
+  const now = Date.now(), W4 = 28*86400000;
+  let last4 = 0, prev4 = 0;
+  Object.keys(days).forEach(k => {
+    const t = new Date(k + 'T12:00:00').getTime();
+    if(now - t <= W4) last4++;
+    else if(now - t <= 2*W4) prev4++;
+  });
+  const up = items.filter(i => i.pct > 2).length;
+  const down = items.filter(i => i.pct < -2).length;
+  const flat = items.length - up - down;
+  const avg = items.reduce((a,i) => a + i.pct, 0) / items.length;
+  const dir = avg > 2 ? ['📈','Aufwärtstrend','var(--green)']
+            : avg < -2 ? ['📉','Abwärtstrend','var(--red)']
+            : ['➡️','Stabil','var(--orange)'];
+  // weekly performance index (each exercise starts at 100 %)
+  const buckets = {};
+  items.forEach(it => {
+    const base = it.m.values.find(v => v > 0);
+    if(!base) return;
+    it.m.dates.forEach((d, i) => {
+      const v = it.m.values[i];
+      if(v <= 0) return;
+      const dt = new Date(d + 'T12:00:00');
+      dt.setDate(dt.getDate() - ((dt.getDay()+6)%7));
+      const wk = dkey(dt);
+      (buckets[wk] = buckets[wk] || {})[it.ex.id] = v / base * 100;
+    });
+  });
+  const weeks = Object.keys(buckets).sort();
+  const idx = weeks.map(w => {
+    const vs = Object.values(buckets[w]);
+    return vs.reduce((a,b) => a+b, 0) / vs.length;
+  });
+  let html = `<div class="sum-card">
+    <div class="sum-head" style="color:${dir[2]}">${dir[0]} ${dir[1]}: ${avg>0?'+':''}${avg.toFixed(1)} %</div>
+    <div class="sum-sub">Gesamt-Tendenz über alle Übungen (${items.length}) seit Aufzeichnungsbeginn</div>
+    <div class="sum-row">
+      <div class="stat"><div class="v" style="color:var(--green)">${up}</div><div class="l">verbessert</div></div>
+      <div class="stat"><div class="v" style="color:var(--orange)">${flat}</div><div class="l">stabil</div></div>
+      <div class="stat"><div class="v" style="color:var(--red)">${down}</div><div class="l">rückläufig</div></div>
+    </div>
+    ${idx.length >= 2 ? `<canvas class="chart" id="sum-chart" style="height:130px; margin:12px 0 0"></canvas>
+    <div class="sum-sub" style="margin-top:4px">Performance-Index pro Woche: Ø aller Übungen, Start = 100 % · gestrichelt: Trendlinie</div>` : ''}
+    <div class="sum-sub" style="margin-top:10px">Trainingstage: ${last4} in den letzten 4 Wochen${prev4 ? ' · davor: ' + prev4 : ''}</div>
+  </div>`;
+  let lastPage = null;
+  items.forEach(it => {
+    if(it.p !== lastPage){ html += `<div class="stats-page">${esc(it.p.name)}</div>`; lastPage = it.p; }
+    const t = it.pct;
+    const badge = t > 2 ? ['+' + t.toFixed(1) + ' %','var(--green)']
+               : t < -2 ? [t.toFixed(1) + ' %','var(--red)']
+               : ['± stabil','var(--orange)'];
+    const lastV = it.m.values[it.m.values.length - 1];
+    html += `<div class="stats-card">
+      <div class="stats-head">
+        ${it.ex.img ? `<img class="thumb-sm" src="${IMG_BASE}${esc(it.ex.img)}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="head-mid">
+          <span class="name" style="font-size:15px">${esc(it.ex.name)}</span>
+          <span class="total">${it.m.label} · aktuell ${it.m.isTime ? fmt(lastV) : Math.round(lastV*10)/10}</span>
+        </div>
+        <span class="trend-badge" style="color:${badge[1]}">${badge[0]}</span>
+      </div>
+      <canvas class="chart" id="stats-ch-${it.ex.id}" style="height:110px; margin-bottom:0"></canvas>
+    </div>`;
+  });
+  body.innerHTML = html;
+  requestAnimationFrame(() => {
+    if(idx.length >= 2) drawTrendChart(idx);
+    items.forEach(it => drawSeries('stats-ch-' + it.ex.id, it.m.values, it.m.color, it.m.isTime));
+  });
+}
+function drawTrendChart(vals){
+  const cv = document.getElementById('sum-chart'); if(!cv) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.clientWidth * dpr, H = cv.clientHeight * dpr;
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  const pad = 28*dpr, n = vals.length;
+  const xm = (n-1)/2, ym = vals.reduce((a,b) => a+b, 0)/n;
+  let num = 0, den = 0;
+  vals.forEach((v,i) => { num += (i-xm)*(v-ym); den += (i-xm)*(i-xm); });
+  const sl = den ? num/den : 0, st = ym - sl*xm, en = st + sl*(n-1);
+  const mx = Math.max(...vals, st, en, 102), mn = Math.min(...vals, st, en, 98);
+  const x = i => pad + i * (W - 2*pad) / (n - 1);
+  const y = v => H - pad - ((v - mn) / ((mx - mn) || 1)) * (H - 2*pad);
+  g.strokeStyle = '#8a97a5'; g.lineWidth = 1*dpr; g.setLineDash([4*dpr, 4*dpr]);
+  g.beginPath(); g.moveTo(pad, y(100)); g.lineTo(W - pad, y(100)); g.stroke();
+  g.setLineDash([]);
+  g.fillStyle = '#8a97a5'; g.font = `${9*dpr}px sans-serif`;
+  g.fillText('100 %', 2*dpr, y(100) - 3*dpr);
+  g.strokeStyle = sl >= 0 ? '#51cf66' : '#ff6b6b';
+  g.setLineDash([6*dpr, 5*dpr]); g.lineWidth = 2*dpr;
+  g.beginPath(); g.moveTo(x(0), y(st)); g.lineTo(x(n-1), y(en)); g.stroke();
+  g.setLineDash([]);
+  g.strokeStyle = '#4dabf7'; g.fillStyle = '#4dabf7'; g.lineWidth = 2*dpr;
+  g.beginPath();
+  vals.forEach((v,i) => i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v)));
+  g.stroke();
+  vals.forEach((v,i) => { g.beginPath(); g.arc(x(i), y(v), 3*dpr, 0, 7); g.fill(); });
+  g.fillStyle = '#e8edf2'; g.font = `${10*dpr}px sans-serif`; g.textAlign = 'right';
+  g.fillText(Math.round(vals[n-1]) + ' %', x(n-1) - 6*dpr, Math.max(y(vals[n-1]) - 8*dpr, 12*dpr));
+  g.textAlign = 'left';
+}
+function drawSeries(cvId, vals, color, isTime){
+  const cv = document.getElementById(cvId); if(!cv) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.clientWidth * dpr, H = cv.clientHeight * dpr;
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  const pad = 24*dpr, n = vals.length;
+  const mx = Math.max(...vals, 1), mn = Math.min(...vals, 0);
+  const x = i => pad + i * (W - 2*pad) / (n - 1);
+  const y = v => H - pad - ((v - mn) / ((mx - mn) || 1)) * (H - 2*pad);
+  g.strokeStyle = color; g.fillStyle = color; g.lineWidth = 2*dpr;
+  g.beginPath();
+  vals.forEach((v,i) => i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v)));
+  g.stroke();
+  vals.forEach((v,i) => { g.beginPath(); g.arc(x(i), y(v), 3*dpr, 0, 7); g.fill(); });
+  g.font = `${10*dpr}px sans-serif`;
+  g.textAlign = 'right';
+  g.fillText(isTime ? fmt(vals[n-1]) : String(Math.round(vals[n-1]*10)/10),
+    x(n-1) - 6*dpr, Math.max(y(vals[n-1]) - 7*dpr, 12*dpr));
+  g.textAlign = 'left';
 }
 
 // ---------- Progress chart ----------
