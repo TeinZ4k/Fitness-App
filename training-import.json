@@ -1,0 +1,997 @@
+{
+ "pages": [
+  {
+   "id": "imp0001",
+   "name": "Geräte-Set",
+   "mode": "ex",
+   "exercises": [
+    {
+     "id": "imp0002",
+     "name": "Rudern am Gerät",
+     "img": "",
+     "note": "",
+     "settings": "Sitz 7, Brust 8",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "35",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "35",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "35",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp0003",
+     "name": "Latzug breiter Griff",
+     "img": "Wide-Grip_Lat_Pulldown/0.jpg",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "30",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "30",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "30",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp0004",
+     "name": "Chest Press",
+     "img": "Machine_Bench_Press/0.jpg",
+     "note": "",
+     "settings": "Sitz 8",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "20",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "20",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "20",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp0005",
+     "name": "Trizeps am Kabelzug",
+     "img": "Triceps_Pushdown/0.jpg",
+     "note": "",
+     "settings": "Höhe 35",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "5",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "5",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "5",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp0006",
+     "name": "Bauch am Gerät",
+     "img": "Ab_Crunch_Machine/0.jpg",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "45",
+         "reps": "20",
+         "sec": 0
+        },
+        {
+         "kg": "45",
+         "reps": "20",
+         "sec": 0
+        },
+        {
+         "kg": "45",
+         "reps": "20",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp0007",
+     "name": "Hyperextension",
+     "img": "Hyperextensions_(Back_Extensions)/0.jpg",
+     "note": "",
+     "settings": "Höhe 8",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "imp0008",
+   "name": "Zirkel 1",
+   "mode": "circuit",
+   "exercises": [
+    {
+     "id": "imp0009",
+     "name": "Beinpresse",
+     "img": "Leg_Press/0.jpg",
+     "note": "",
+     "settings": "Höhe 4 + grünes Band",
+     "linkNext": true,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "60",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "60",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "60",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp000a",
+     "name": "Squat Jumps",
+     "img": "",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp000b",
+     "name": "Hamstring-Curls auf der Blackroll",
+     "img": "",
+     "note": "Rücklings, Füße auf der Rolle – Rolle zum Gesäß rollen und zurück",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp000c",
+     "name": "Sit-ups auf dem Medizinball",
+     "img": "",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "",
+         "reps": "15",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "15",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "15",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp000d",
+     "name": "Dead Bug mit Gewicht",
+     "img": "",
+     "note": "~6 kg über dem Kopf halten, Beine abwechselnd nach vorne strecken",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "6",
+         "reps": "",
+         "sec": 0
+        },
+        {
+         "kg": "6",
+         "reps": "",
+         "sec": 0
+        },
+        {
+         "kg": "6",
+         "reps": "",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp000e",
+     "name": "Lunges",
+     "img": "",
+     "note": "pro Seite",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "",
+         "reps": "10",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "10",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "10",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp000f",
+     "name": "Seitlicher Bauch am Gerät",
+     "img": "",
+     "note": "pro Seite – ab der Hüfte seitlich hängend",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "imp000g",
+   "name": "Zirkel 2",
+   "mode": "circuit",
+   "exercises": [
+    {
+     "id": "imp000h",
+     "name": "Klimmzüge breiter Griff",
+     "img": "Pullups/0.jpg",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000i",
+     "name": "Liegestütze",
+     "img": "Pushups/0.jpg",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000j",
+     "name": "Sit-ups auf dem Ball",
+     "img": "",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000k",
+     "name": "Diamond Push-ups",
+     "img": "",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000l",
+     "name": "Beinpendeln",
+     "img": "",
+     "note": "Rücklings, Beine angewinkelt – Knie abwechselnd rechts/links ablegen",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000m",
+     "name": "Rudern an der Sprossenwand",
+     "img": "",
+     "note": "",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "8",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "8",
+         "reps": "12",
+         "sec": 0
+        },
+        {
+         "kg": "8",
+         "reps": "12",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "imp000n",
+     "name": "Klimmzug-Twists",
+     "img": "",
+     "note": "Hängend Knie Richtung Brust ziehen, abwechselnd rechts/links",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": [
+      {
+       "date": "2026-07-02T12:00:00.000Z",
+       "sets": [
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        },
+        {
+         "kg": "",
+         "reps": "6",
+         "sec": 0
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "imp000o",
+   "name": "Power-Sets",
+   "mode": "circuit",
+   "exercises": [
+    {
+     "id": "imp000p",
+     "name": "Burpees",
+     "img": "",
+     "note": "Ziel: 45 s pro Runde · 30 s Pause",
+     "settings": "",
+     "linkNext": true,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000q",
+     "name": "Jump Lunges",
+     "img": "",
+     "note": "Ziel: 45 s pro Runde · 30 s Pause",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000r",
+     "name": "Rudern am Gerät (Cardio)",
+     "img": "",
+     "note": "5 Minuten am Stück",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000s",
+     "name": "Mountain Climbers",
+     "img": "Mountain_Climbers/0.jpg",
+     "note": "Ziel: 60 s · 30 s Pause · 3 Runden",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    },
+    {
+     "id": "imp000t",
+     "name": "Knee to Squat",
+     "img": "",
+     "note": "Ziel: 60 s · 30 s Pause · 3 Runden",
+     "settings": "",
+     "linkNext": false,
+     "current": [
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      },
+      {
+       "kg": "",
+       "reps": "",
+       "sec": 0
+      }
+     ],
+     "history": []
+    }
+   ]
+  }
+ ]
+}
