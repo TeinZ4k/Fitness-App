@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Mein Training v3.4 -->
+<!-- Mein Training v3.5 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -114,6 +114,14 @@
   .c-row{display:flex; gap:6px; align-items:center;}
   .c-row input.num{flex:1;}
   .circuit-actions{display:flex; gap:8px; margin-top:4px; margin-bottom:14px;}
+  /* Superset */
+  .card.ss, .ccard.ss{border-color:var(--orange);}
+  .ss-badge{font-size:11px; font-weight:700; color:var(--orange);
+    border:1px solid var(--orange); border-radius:7px; padding:2px 8px;
+    display:inline-block; margin-bottom:8px;}
+  .ss-conn{text-align:center; color:var(--orange); font-size:13px; font-weight:700;
+    margin:-11px 0 3px; position:relative; z-index:2; line-height:1;}
+  .icon-btn.ss-on{color:var(--orange); border-color:var(--orange);}
   /* Exercise card */
   .card{background:var(--card); border:1px solid var(--line); border-radius:14px;
     padding:12px; margin-bottom:14px;}
@@ -460,6 +468,11 @@ function moveExercise(exId, dir){
   const j = i + dir;
   if(i < 0 || j < 0 || j >= p.exercises.length) return;
   [p.exercises[i], p.exercises[j]] = [p.exercises[j], p.exercises[i]];
+  save(); render();
+}
+function toggleSuperset(exId){
+  const ex = findEx(exId); if(!ex) return;
+  ex.linkNext = !ex.linkNext;
   save(); render();
 }
 const openNotes = new Set();
@@ -1068,7 +1081,12 @@ function render(){
   if(mode === 'circuit'){
     main.innerHTML = seg + circuitHTML(p);
   } else {
-    main.innerHTML = seg + p.exercises.map(ex => cardHTML(ex)).join('') +
+    main.innerHTML = seg + p.exercises.map((ex, i) => {
+      const linkedPrev = i > 0 && p.exercises[i-1].linkNext;
+      const linkedNext = !!ex.linkNext && i < p.exercises.length - 1;
+      return cardHTML(ex, linkedPrev, linkedNext, i < p.exercises.length - 1) +
+        (linkedNext ? '<div class="ss-conn">🔗</div>' : '');
+    }).join('') +
       `<button class="add-ex" onclick="addExercise()">＋ Übung hinzufügen</button>`;
   }
   // restore running-timer styling
@@ -1083,13 +1101,17 @@ function circuitHTML(p){
     `<button class="round-btn ${i===r?'on':''}" onclick="activeRound=${i};render()">Runde ${i+1}</button>`
   ).join('') + `</div>`;
   const sum = p.exercises.reduce((a,ex) => a + currentSec(ex, `${ex.id}-${r}`, r), 0);
-  const cards = p.exercises.map(ex => {
+  const cards = p.exercises.map((ex, i) => {
     const s = ex.current[r];
+    const linkedPrev = i > 0 && p.exercises[i-1].linkNext;
+    const linkedNext = !!ex.linkNext && i < p.exercises.length - 1;
+    const inSS = linkedPrev || linkedNext;
     const last = ex.history[0] ? ex.history[0].sets[r] : null;
     const lastTxt = last
       ? `Letztes Mal: ${last.kg||'–'} kg × ${last.reps||'–'} | ${fmt(last.sec||0)}`
       : 'Noch kein Verlauf';
-    return `<div class="ccard">
+    return `<div class="ccard${inSS ? ' ss' : ''}">
+      ${linkedNext && !linkedPrev ? '<span class="ss-badge">🔗 Supersatz</span>' : ''}
       <div style="display:flex; gap:10px; align-items:center;">
         ${ex.img ? `<img class="thumb-sm" src="${IMG_BASE}${esc(ex.img)}" loading="lazy" onerror="this.style.display='none'">` : ''}
         <div style="flex:1; min-width:0;">
@@ -1098,6 +1120,7 @@ function circuitHTML(p){
         </div>
         <button class="icon-btn" onclick="moveExercise('${ex.id}',-1)">↑</button>
         <button class="icon-btn" onclick="moveExercise('${ex.id}',1)">↓</button>
+        ${i < p.exercises.length - 1 ? `<button class="icon-btn${ex.linkNext ? ' ss-on' : ''}" onclick="toggleSuperset('${ex.id}')">🔗</button>` : ''}
       </div>
       ${ex.note ? `<div class="c-note">📝 ${esc(ex.note)}</div>` : ''}
       <div class="c-row" style="margin-top:6px">
@@ -1109,7 +1132,7 @@ function circuitHTML(p){
           onchange="setTime('${ex.id}',${r},this.value)">
         <button class="timer-btn" id="tbtn-${ex.id}-${r}" onclick="toggleTimer('${ex.id}',${r})">▶</button>
       </div>
-    </div>`;
+    </div>` + (linkedNext ? '<div class="ss-conn">🔗</div>' : '');
   }).join('');
   return roundBtns +
     `<div class="round-total" id="round-total">Runde ${r+1} gesamt: <b>${fmt(sum)}</b></div>` +
@@ -1121,7 +1144,7 @@ function circuitHTML(p){
     <button class="add-ex" onclick="addExercise()">＋ Übung hinzufügen</button>`;
 }
 
-function cardHTML(ex){
+function cardHTML(ex, linkedPrev, linkedNext, hasNext){
   const rows = [0,1,2].map(i => {
     const s = ex.current[i];
     return `<tr>
@@ -1143,7 +1166,9 @@ function cardHTML(ex){
   const noteHTML = openNotes.has(ex.id)
     ? `<textarea class="note" placeholder="Notiz, z.B. Griff enger…" onchange="setNote('${ex.id}',this.value)">${esc(ex.note||'')}</textarea>`
     : '';
-  return `<div class="card">
+  const inSS = linkedPrev || linkedNext;
+  return `<div class="card${inSS ? ' ss' : ''}">
+    ${linkedNext && !linkedPrev ? '<span class="ss-badge">🔗 Supersatz</span>' : ''}
     <div class="card-head">
       ${ex.img ? `<img class="thumb" src="${IMG_BASE}${esc(ex.img)}" loading="lazy" onerror="this.style.display='none'">` : ''}
       <div class="head-mid">
@@ -1152,6 +1177,7 @@ function cardHTML(ex){
       </div>
       <button class="icon-btn" onclick="moveExercise('${ex.id}',-1)">↑</button>
       <button class="icon-btn" onclick="moveExercise('${ex.id}',1)">↓</button>
+      ${hasNext ? `<button class="icon-btn${ex.linkNext ? ' ss-on' : ''}" onclick="toggleSuperset('${ex.id}')">🔗</button>` : ''}
       <button class="icon-btn" onclick="deleteExercise('${ex.id}')">🗑</button>
     </div>
     <table class="sets">
