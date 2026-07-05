@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Mein Training v3.6 -->
+<!-- Mein Training v3.7 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -241,6 +241,7 @@
     <button class="ok" onclick="importData()">⬆ Import (JSON)</button>
     <button class="ok" style="background:var(--green);color:#0c130d" onclick="exportCSV()">⬇ Export als CSV (Excel)</button>
     <button class="ok" style="background:var(--green);color:#0c130d" onclick="importCSV()">⬆ Import aus CSV</button>
+    <button class="ok" style="background:var(--orange);color:#1d1206" onclick="importFromURL()">🌐 Import von URL (JSON)</button>
     <button class="cancel" onclick="closeData()">Schließen</button>
   </div>
 </dialog>
@@ -1049,6 +1050,38 @@ function importCSV(){
     fi.value = '';
   };
   fi.click();
+}
+
+function importFromURL(){
+  closeData();
+  let def = localStorage.getItem('import-url') || '';
+  if(!def && location.protocol.startsWith('http')){
+    try{ def = new URL('training-import.json', location.href).href; }catch(e){}
+  }
+  document.getElementById('dlg-title').textContent = 'Import von URL';
+  const inp = document.getElementById('dlg-input');
+  const sg = document.getElementById('dlg-sugg');
+  sg.innerHTML = ''; inp.oninput = null;
+  inp.value = def; inp.placeholder = 'https://…/training-import.json';
+  document.getElementById('dlg-ok').onclick = () => {
+    const url = inp.value.trim();
+    dlg.close();
+    if(!url) return;
+    fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now())
+      .then(r => { if(!r.ok) throw 0; return r.json(); })
+      .then(data => {
+        if(!Array.isArray(data.pages)) throw 0;
+        if(!confirm('Aktuelle Daten durch die Daten von dieser URL ersetzen?')) return;
+        try{ localStorage.setItem('import-url', url); }catch(e){}
+        state = data;
+        activePage = state.pages.length ? state.pages[0].id : null;
+        save(); render();
+        alert('Import erfolgreich: ' + state.pages.length + ' Seiten geladen.');
+      })
+      .catch(() => alert('Konnte die Datei nicht laden. URL prüfen – und ist das Handy online?'));
+  };
+  dlg.showModal();
+  setTimeout(()=>inp.focus(), 50);
 }
 
 function exportData(){
