@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Mein Training v3.5 -->
+<!-- Mein Training v3.6 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -114,6 +114,12 @@
   .c-row{display:flex; gap:6px; align-items:center;}
   .c-row input.num{flex:1;}
   .circuit-actions{display:flex; gap:8px; margin-top:4px; margin-bottom:14px;}
+  /* Machine settings */
+  .gear{display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--accent);
+    background:rgba(77,171,247,.1); border:1px solid rgba(77,171,247,.45); border-radius:7px;
+    padding:2px 8px; margin-top:3px; max-width:100%; overflow-wrap:anywhere; cursor:pointer;
+    align-self:flex-start;}
+  .gear.empty{color:var(--muted); background:none; border-style:dashed; border-color:var(--line);}
   /* Superset */
   .card.ss, .ccard.ss{border-color:var(--orange);}
   .ss-badge{font-size:11px; font-weight:700; color:var(--orange);
@@ -281,7 +287,7 @@ function findEx(exId){
 
 // New exercise: 3 sets, current entry + history
 function newExercise(name, img){
-  return { id: uid(), name, img: img || '', note: '', current: emptySets(), history: [] };
+  return { id: uid(), name, img: img || '', note: '', settings: '', current: emptySets(), history: [] };
 }
 
 // ---------- Exercise catalog (free-exercise-db, public domain) ----------
@@ -469,6 +475,26 @@ function moveExercise(exId, dir){
   if(i < 0 || j < 0 || j >= p.exercises.length) return;
   [p.exercises[i], p.exercises[j]] = [p.exercises[j], p.exercises[i]];
   save(); render();
+}
+function editSettings(exId){
+  const ex = findEx(exId); if(!ex) return;
+  document.getElementById('dlg-title').textContent = 'Geräteeinstellung';
+  const inp = document.getElementById('dlg-input');
+  const sg = document.getElementById('dlg-sugg');
+  sg.innerHTML = ''; inp.oninput = null;
+  inp.value = ex.settings || ''; inp.placeholder = 'z.B. Sitz 7, Brust 8';
+  document.getElementById('dlg-ok').onclick = () => {
+    ex.settings = inp.value.trim();
+    dlg.close();
+    save(); render();
+  };
+  dlg.showModal();
+  setTimeout(()=>inp.focus(), 50);
+}
+function gearHTML(ex){
+  return ex.settings
+    ? `<span class="gear" onclick="editSettings('${ex.id}')">⚙ ${esc(ex.settings)}</span>`
+    : `<span class="gear empty" onclick="editSettings('${ex.id}')">⚙ Einstellung</span>`;
 }
 function toggleSuperset(exId){
   const ex = findEx(exId); if(!ex) return;
@@ -1117,6 +1143,7 @@ function circuitHTML(p){
         <div style="flex:1; min-width:0;">
           <div class="c-name">${esc(ex.name)}</div>
           <div class="c-last">${lastTxt}</div>
+          ${gearHTML(ex)}
         </div>
         <button class="icon-btn" onclick="moveExercise('${ex.id}',-1)">↑</button>
         <button class="icon-btn" onclick="moveExercise('${ex.id}',1)">↓</button>
@@ -1174,6 +1201,7 @@ function cardHTML(ex, linkedPrev, linkedNext, hasNext){
       <div class="head-mid">
         <span class="name" onclick="renameExercise('${ex.id}')">${esc(ex.name)}</span>
         <span class="total" id="total-${ex.id}">Gesamt: <b>${fmt(totalSec(ex))}</b></span>
+        ${gearHTML(ex)}
       </div>
       <button class="icon-btn" onclick="moveExercise('${ex.id}',-1)">↑</button>
       <button class="icon-btn" onclick="moveExercise('${ex.id}',1)">↓</button>
