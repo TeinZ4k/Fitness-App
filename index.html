@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Mein Training v3.9 -->
+<!-- Mein Training v4.0 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -47,18 +47,27 @@
   .chart-legend{font-size:11px; color:var(--muted); margin-bottom:8px; display:flex; gap:12px;}
   .chart-legend .lg-kg{color:var(--accent);}
   .chart-legend .lg-reps{color:var(--orange);}
-  /* Rest timer bar */
-  .restbar{position:fixed; bottom:46px; left:0; right:0; background:var(--card);
-    border-top:1px solid var(--line); padding:7px 12px; display:flex; gap:8px;
+  /* Workout session bar */
+  .sessionbar{position:fixed; bottom:46px; left:0; right:0; background:#12271a;
+    border-top:1px solid var(--green); padding:8px 14px; display:none; gap:12px;
     align-items:center; justify-content:center; z-index:9;}
-  .restbar .r-label{font-size:13px; color:var(--muted);}
-  .restbar button{background:var(--card2); border:1px solid var(--line); color:var(--text);
-    border-radius:8px; padding:8px 14px; font-size:14px; font-weight:600;}
-  .restbar.running{background:#1d2b1f;}
-  .restbar .r-count{font-size:20px; font-weight:700; color:var(--green); min-width:64px; text-align:center;}
-  .restbar .r-stop{color:var(--red);}
-  .restbar.flash{background:var(--green);}
-  .restbar.flash .r-count{color:#0c130d;}
+  .sessionbar .s-label{font-size:13px; color:var(--green);}
+  .sessionbar .s-count{font-size:20px; font-weight:700; color:var(--green); font-variant-numeric:tabular-nums;}
+  .sessionbar .s-cancel{background:none; border:none; color:var(--muted); font-size:14px; padding:4px 8px;}
+  /* Success screen */
+  .win-box{max-width:420px; margin:10vh auto 0; text-align:center;}
+  .win-emoji{font-size:64px; margin-bottom:8px;}
+  .win-box h2{font-size:24px; margin:0 0 6px;}
+  .win-sub{color:var(--muted); font-size:14px; margin-bottom:18px;}
+  .win-box .ov-close{margin-top:22px; width:100%; background:var(--green); color:#0c130d;
+    border:none; font-weight:700; padding:13px; font-size:16px;}
+  /* Workout log */
+  .wo-log{margin-top:18px; border-top:1px solid var(--line); padding-top:10px;}
+  .wo-title{font-size:13px; font-weight:600; color:var(--muted); margin-bottom:8px;}
+  .wo-row{display:flex; justify-content:space-between; gap:8px; background:var(--card);
+    border:1px solid var(--line); border-radius:10px; padding:8px 10px; margin-bottom:6px;
+    font-size:12px; color:var(--muted); flex-wrap:wrap;}
+  .wo-row b{color:var(--text);}
   /* Calendar overlay */
   .overlay{position:fixed; inset:0; background:var(--bg); z-index:20; display:none;
     padding:16px; overflow-y:auto;}
@@ -203,11 +212,16 @@
 </header>
 <main id="main"></main>
 
-<div class="restbar" id="restbar">
-  <span class="r-label">⏱ Pause:</span>
-  <button onclick="startRest(60)">1:00</button>
-  <button onclick="startRest(90)">1:30</button>
-  <button onclick="startRest(120)">2:00</button>
+<div class="sessionbar" id="session-bar"></div>
+
+<div class="overlay" id="win-overlay">
+  <div class="win-box">
+    <div class="win-emoji">🎉</div>
+    <h2>Training geschafft!</h2>
+    <div class="win-sub" id="win-count"></div>
+    <div class="cal-stats" style="margin-top:0" id="win-stats"></div>
+    <button class="ov-close" onclick="closeWin()">Schließen</button>
+  </div>
 </div>
 
 <footer>
@@ -280,14 +294,17 @@ const timers = {}; // "exId-setIdx" -> {startTs, interval}
 function migrate(data){
   var SEED_DATE = '2026-07-02T12:00:00.000Z';
   if(!data || !Array.isArray(data.pages)) return data;
-  data.pages.forEach(p => (p.exercises||[]).forEach(ex => {
-    if(!Array.isArray(ex.history)) ex.history = [];
-    const i = ex.history.findIndex(h => h.date === SEED_DATE);
-    if(i >= 0){
-      if(!ex.seed) ex.seed = ex.history[i].sets;
-      ex.history.splice(i, 1);
-    }
-  }));
+  data.pages.forEach(p => {
+    if(p.session && (!p.session.start || Date.now() - p.session.start > 12*3600*1000)) delete p.session;
+    (p.exercises||[]).forEach(ex => {
+      if(!Array.isArray(ex.history)) ex.history = [];
+      const i = ex.history.findIndex(h => h.date === SEED_DATE);
+      if(i >= 0){
+        if(!ex.seed) ex.seed = ex.history[i].sets;
+        ex.history.splice(i, 1);
+      }
+    });
+  });
   return data;
 }
 function load(){
@@ -595,12 +612,14 @@ function setVal(exId, idx, field, value){
   const ex = findEx(exId); if(!ex) return;
   ex.current[idx][field] = value;
   save();
+  if(value !== '') sessionTouch();
   updateTotal(exId);
 }
 function setTime(exId, idx, str){
   const ex = findEx(exId); if(!ex) return;
   ex.current[idx].sec = parseTime(str);
   save();
+  if(ex.current[idx].sec > 0) sessionTouch();
   const inp = document.getElementById(`time-${exId}-${idx}`);
   if(inp) inp.value = fmt(ex.current[idx].sec);
   updateTotal(exId);
@@ -617,6 +636,7 @@ function toggleTimer(exId, idx){
     save();
   } else {                            // start
     timers[key] = { startTs: Date.now(), interval: setInterval(()=>tick(exId, idx), 1000) };
+    sessionTouch();
   }
   paintTimer(exId, idx);
   updateTotal(exId);
@@ -701,6 +721,7 @@ function saveSession(exId){
   if(ex.history.length > 100) ex.history.length = 100;
   ex.current = emptySets();
   save(); render();
+  checkSessionEnd();
 }
 function saveAll(){
   const p = page(); if(!p) return;
@@ -720,6 +741,7 @@ function saveAll(){
   if(!n){ alert('Noch keine Werte eingetragen.'); return; }
   activeRound = 0;
   save(); render();
+  checkSessionEnd();
 }
 function deleteHistEntry(exId, i){
   const ex = findEx(exId); if(!ex) return;
@@ -734,41 +756,78 @@ function toggleHistory(exId){
   render();
 }
 
-// ---------- Rest timer ----------
-let restEnd = 0, restIv = null;
-function startRest(sec){
-  restEnd = Date.now() + sec*1000;
-  clearInterval(restIv);
-  restIv = setInterval(restTick, 250);
-  restTick();
+// ---------- Workout session ----------
+function sessionTouch(){
+  const p = page(); if(!p) return;
+  if(!p.session){ p.session = { start: Date.now() }; save(); }
+  updateSessionBar();
 }
-function stopRest(){
-  clearInterval(restIv); restIv = null;
-  const bar = document.getElementById('restbar');
-  bar.classList.remove('running','flash');
-  bar.innerHTML = `<span class="r-label">⏱ Pause:</span>
-    <button onclick="startRest(60)">1:00</button>
-    <button onclick="startRest(90)">1:30</button>
-    <button onclick="startRest(120)">2:00</button>`;
+function anyUnsaved(p){
+  return p.exercises.some(ex => ex.current.some(s => s.kg !== '' || s.reps !== '' || s.sec > 0));
 }
-function restTick(){
-  const left = Math.ceil((restEnd - Date.now())/1000);
-  const bar = document.getElementById('restbar');
-  if(left <= 0){
-    clearInterval(restIv); restIv = null;
-    bar.classList.add('flash');
-    bar.innerHTML = `<span class="r-count">Weiter geht's! 💪</span>
-      <button class="r-stop" onclick="stopRest()">OK</button>`;
-    if(navigator.vibrate) navigator.vibrate([300,120,300,120,500]);
-    beep();
-    setTimeout(stopRest, 6000);
-    return;
-  }
-  bar.classList.add('running');
-  bar.innerHTML = `<span class="r-label">Pause</span>
-    <span class="r-count">${fmt(left)}</span>
-    <button onclick="restEnd+=30000;restTick()">+30s</button>
-    <button class="r-stop" onclick="stopRest()">✕</button>`;
+function checkSessionEnd(){
+  const p = page(); if(!p || !p.session) return;
+  if(anyUnsaved(p)) return;
+  const totalSec = Math.max(0, Math.round((Date.now() - p.session.start) / 1000));
+  const startIso = new Date(p.session.start - 60000).toISOString();
+  let exSec = 0, count = 0;
+  p.exercises.forEach(ex => {
+    let counted = false;
+    ex.history.forEach(h => {
+      if(h.date >= startIso){
+        exSec += h.sets.reduce((a,s) => a + (s.sec||0), 0);
+        counted = true;
+      }
+    });
+    if(counted) count++;
+  });
+  exSec = Math.min(exSec, totalSec);
+  const pauseSec = Math.max(0, totalSec - exSec);
+  if(!p.workouts) p.workouts = [];
+  p.workouts.unshift({ date: new Date().toISOString(), totalSec, exSec, pauseSec, count });
+  if(p.workouts.length > 50) p.workouts.length = 50;
+  delete p.session;
+  save(); render(); updateSessionBar();
+  showWin(totalSec, exSec, pauseSec, count);
+}
+function showWin(total, exs, pause, count){
+  document.getElementById('win-count').textContent =
+    count + (count === 1 ? ' Übung' : ' Übungen') + ' abgeschlossen – stark! 💪';
+  document.getElementById('win-stats').innerHTML = `
+    <div class="stat"><div class="v">${fmt(total)}</div><div class="l">Gesamtzeit</div></div>
+    <div class="stat"><div class="v">${fmt(exs)}</div><div class="l">Übungszeit</div></div>
+    <div class="stat"><div class="v">${fmt(pause)}</div><div class="l">Pausen</div></div>`;
+  document.getElementById('win-overlay').classList.add('open');
+  if(navigator.vibrate) try{ navigator.vibrate([200,100,200,100,400]); }catch(e){}
+  beep();
+}
+function closeWin(){ document.getElementById('win-overlay').classList.remove('open'); }
+function updateSessionBar(){
+  const bar = document.getElementById('session-bar');
+  if(!bar) return;
+  const p = page();
+  if(!p || !p.session){ bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = `<span class="s-label">🏋️ Training läuft</span>
+    <span class="s-count">${fmt((Date.now() - p.session.start)/1000)}</span>
+    <button class="s-cancel" onclick="cancelSession()">✕</button>`;
+}
+function cancelSession(){
+  const p = page(); if(!p || !p.session) return;
+  if(!confirm('Trainings-Timer verwerfen? Eingetragene Werte bleiben erhalten.')) return;
+  delete p.session; save(); updateSessionBar();
+}
+setInterval(updateSessionBar, 1000);
+function workoutsHTML(p){
+  if(!p.workouts || !p.workouts.length) return '';
+  return `<div class="wo-log"><div class="wo-title">🏁 Abgeschlossene Trainings</div>` +
+    p.workouts.slice(0, 5).map(w => {
+      const d = new Date(w.date).toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'});
+      return `<div class="wo-row"><span>${d}</span>
+        <span>Gesamt <b>${fmt(w.totalSec)}</b></span>
+        <span>Übung <b>${fmt(w.exSec)}</b></span>
+        <span>Pause <b>${fmt(w.pauseSec)}</b></span></div>`;
+    }).join('') + `</div>`;
 }
 function beep(){
   try{
@@ -1204,8 +1263,9 @@ function render(){
     <button class="${mode==='ex'?'on':''}" onclick="setMode('ex')">Übungsweise</button>
     <button class="${mode==='circuit'?'on':''}" onclick="setMode('circuit')">Rundenweise</button>
   </div><button class="edit-btn ${editMode?'on':''}" onclick="toggleEdit()">✎</button></div>`;
+  const wo = workoutsHTML(p);
   if(mode === 'circuit'){
-    main.innerHTML = seg + circuitHTML(p);
+    main.innerHTML = seg + circuitHTML(p) + wo;
   } else {
     main.innerHTML = seg + p.exercises.map((ex, i) => {
       const linkedPrev = i > 0 && p.exercises[i-1].linkNext;
@@ -1213,8 +1273,9 @@ function render(){
       return cardHTML(ex, linkedPrev, linkedNext, i < p.exercises.length - 1) +
         (linkedNext ? '<div class="ss-conn">🔗</div>' : '');
     }).join('') +
-      `<button class="add-ex" onclick="addExercise()">＋ Übung hinzufügen</button>`;
+      `<button class="add-ex" onclick="addExercise()">＋ Übung hinzufügen</button>` + wo;
   }
+  updateSessionBar();
   // restore running-timer styling
   p.exercises.forEach(ex => [0,1,2].forEach(i => paintTimer(ex.id, i)));
   // draw charts for open histories
