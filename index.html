@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Mein Training v3.8 -->
+<!-- Mein Training v3.9 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -275,12 +275,33 @@ let activeRound = 0;
 let editMode = false;
 const timers = {}; // "exId-setIdx" -> {startTs, interval}
 
+// Convert imported starter entries (marker date) into seed values so they
+// don't count as real training data points.
+function migrate(data){
+  var SEED_DATE = '2026-07-02T12:00:00.000Z';
+  if(!data || !Array.isArray(data.pages)) return data;
+  data.pages.forEach(p => (p.exercises||[]).forEach(ex => {
+    if(!Array.isArray(ex.history)) ex.history = [];
+    const i = ex.history.findIndex(h => h.date === SEED_DATE);
+    if(i >= 0){
+      if(!ex.seed) ex.seed = ex.history[i].sets;
+      ex.history.splice(i, 1);
+    }
+  }));
+  return data;
+}
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(raw) return JSON.parse(raw);
+    if(raw) return migrate(JSON.parse(raw));
   }catch(e){}
   return { pages: [] };
+}
+// Last real session, or seed values as fallback: [sets, isSeed]
+function lastSets(ex){
+  if(ex.history.length) return [ex.history[0].sets, false];
+  if(ex.seed) return [ex.seed, true];
+  return [null, false];
 }
 function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 
@@ -651,16 +672,18 @@ function updateTotal(exId){
 
 // ---------- Copy from last session ----------
 function copyLast(exId){
-  const ex = findEx(exId); if(!ex || !ex.history.length) return;
-  const last = ex.history[0];
-  ex.current = last.sets.map(s => ({ kg: s.kg, reps: s.reps, sec: 0 }));
+  const ex = findEx(exId); if(!ex) return;
+  const [ls] = lastSets(ex);
+  if(!ls) return;
+  ex.current = ls.map(s => ({ kg: s.kg, reps: s.reps, sec: 0 }));
   save(); render();
 }
 
 function copyLastAll(){
   const p = page(); if(!p) return;
   p.exercises.forEach(ex => {
-    if(ex.history.length) ex.current = ex.history[0].sets.map(s => ({ kg: s.kg, reps: s.reps, sec: 0 }));
+    const [ls] = lastSets(ex);
+    if(ls) ex.current = ls.map(s => ({ kg: s.kg, reps: s.reps, sec: 0 }));
   });
   save(); render();
 }
@@ -1117,7 +1140,7 @@ function importFromURL(){
         if(!Array.isArray(data.pages)) throw 0;
         if(!confirm('Aktuelle Daten durch die Daten von dieser URL ersetzen?')) return;
         try{ localStorage.setItem('import-url', url); }catch(e){}
-        state = data;
+        state = migrate(data);
         activePage = state.pages.length ? state.pages[0].id : null;
         save(); render();
         alert('Import erfolgreich: ' + state.pages.length + ' Seiten geladen.');
@@ -1148,7 +1171,7 @@ function importData(){
         const data = JSON.parse(r.result);
         if(!Array.isArray(data.pages)) throw 0;
         if(!confirm('Aktuelle Daten durch Backup ersetzen?')) return;
-        state = data;
+        state = migrate(data);
         activePage = state.pages.length ? state.pages[0].id : null;
         save(); render();
       }catch(e){ alert('Ungültige Backup-Datei.'); }
@@ -1209,9 +1232,10 @@ function circuitHTML(p){
     const linkedPrev = i > 0 && p.exercises[i-1].linkNext;
     const linkedNext = !!ex.linkNext && i < p.exercises.length - 1;
     const inSS = linkedPrev || linkedNext;
-    const last = ex.history[0] ? ex.history[0].sets[r] : null;
+    const [ls, isSeed] = lastSets(ex);
+    const last = ls ? ls[r] : null;
     const lastTxt = last
-      ? `Letztes Mal: ${last.kg||'–'} kg × ${last.reps||'–'} | ${fmt(last.sec||0)}`
+      ? `${isSeed ? 'Startwerte' : 'Letztes Mal'}: ${last.kg||'–'} kg × ${last.reps||'–'}${isSeed ? '' : ' | ' + fmt(last.sec||0)}`
       : 'Noch kein Verlauf';
     return `<div class="ccard${inSS ? ' ss' : ''}">
       ${linkedNext && !linkedPrev ? '<span class="ss-badge">🔗 Supersatz</span>' : ''}
@@ -1293,7 +1317,7 @@ function cardHTML(ex, linkedPrev, linkedNext, hasNext){
       ${rows}
     </table>
     <div class="actions">
-      <button class="btn copy" onclick="copyLast('${ex.id}')" ${ex.history.length?'':'disabled'}>⟳ Letzte Werte</button>
+      <button class="btn copy" onclick="copyLast('${ex.id}')" ${lastSets(ex)[0]?'':'disabled'}>⟳ Letzte Werte</button>
       <button class="btn save" onclick="saveSession('${ex.id}')">✓ Speichern</button>
       <button class="btn hist" onclick="toggleNote('${ex.id}')">📝</button>
       <button class="btn hist" onclick="toggleHistory('${ex.id}')">📈 ${ex.history.length}</button>
