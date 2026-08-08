@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Mein Training v4.0 -->
+<!-- Mein Training v4.1 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -129,6 +129,14 @@
   .edit-btn.on{background:var(--orange); border-color:var(--orange); color:#1d1206;}
   .thumb.ph, .thumb-sm.ph{display:flex; align-items:center; justify-content:center;
     color:var(--muted); font-size:16px; border:1px dashed var(--line); background:none;}
+  /* Progress rating */
+  .rate{display:inline-flex; align-items:center; gap:2px; font-size:15px; cursor:pointer;
+    border-radius:8px; padding:3px 7px; flex:0 0 auto; border:1px solid transparent;}
+  .rate small{font-size:10px; font-weight:700;}
+  .rate.build{background:rgba(255,169,77,.12); border-color:rgba(255,169,77,.4);}
+  .rate.ok{background:rgba(81,207,102,.12); border-color:rgba(81,207,102,.4); color:var(--green);}
+  .rate.up{background:rgba(81,207,102,.2); border-color:var(--green); animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
   /* Machine settings */
   .gear{display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--accent);
     background:rgba(77,171,247,.1); border:1px solid rgba(77,171,247,.45); border-radius:7px;
@@ -756,6 +764,74 @@ function toggleHistory(exId){
   render();
 }
 
+// ---------- Progress rating (double progression / 2-for-2) ----------
+function setFilled(s){ return s.kg !== '' || s.reps !== '' || s.sec > 0; }
+function timesSimilar(sets){
+  const ts = sets.map(s => s.sec||0).filter(v => v > 0);
+  if(ts.length < 2) return true;
+  const mn = Math.min(...ts), mx = Math.max(...ts);
+  return mx <= Math.max(mn * 1.5, mn + 20);
+}
+function sessionConsistent(h, mode){
+  const sets = h.sets.filter(setFilled);
+  if(sets.length < 3) return null;
+  if(!timesSimilar(sets)) return null;
+  if(mode === 'kg'){
+    const kgs = sets.map(s => parseFloat(s.kg) || 0);
+    if(kgs[0] <= 0 || new Set(kgs).size !== 1) return null;
+    const reps = sets.map(s => parseInt(s.reps) || 0);
+    if(reps.some(r => r <= 0) || new Set(reps).size !== 1) return null;
+    return { kg: kgs[0], reps: reps[0] };
+  }
+  if(mode === 'reps'){
+    const reps = sets.map(s => parseInt(s.reps) || 0);
+    if(reps.some(r => r <= 0) || new Set(reps).size !== 1) return null;
+    return { reps: reps[0] };
+  }
+  const ts = sets.map(s => s.sec || 0);
+  if(ts.some(t => t <= 0)) return null;
+  return { sec: Math.min(...ts) };
+}
+function exRating(ex){
+  if(!ex.history.length) return null;
+  const lastSets = ex.history[0].sets.filter(setFilled);
+  if(!lastSets.length) return null;
+  const mode = lastSets.some(s => parseFloat(s.kg) > 0) ? 'kg'
+             : lastSets.some(s => parseInt(s.reps) > 0) ? 'reps' : 'sec';
+  const cur = sessionConsistent(ex.history[0], mode);
+  if(!cur) return { state: 'build', streak: 0, mode };
+  let streak = 1;
+  for(let i = 1; i < ex.history.length; i++){
+    const c = sessionConsistent(ex.history[i], mode);
+    if(!c) break;
+    if(mode === 'kg'   && (c.kg !== cur.kg || c.reps < cur.reps)) break;
+    if(mode === 'reps' && c.reps < cur.reps) break;
+    if(mode === 'sec'  && c.sec < cur.sec * 0.9) break;
+    streak++;
+  }
+  return { state: streak >= 3 ? 'up' : 'ok', streak, mode };
+}
+function ratingHTML(ex){
+  const r = exRating(ex);
+  if(!r) return '';
+  if(r.state === 'build') return `<span class="rate build" onclick="rateInfo('build')">🔸</span>`;
+  if(r.state === 'ok')    return `<span class="rate ok" onclick="rateInfo('ok')">✅<small>×${r.streak}</small></span>`;
+  return `<span class="rate up" onclick="rateInfo('up','${r.mode}')">⬆️💪</span>`;
+}
+function rateInfo(k, mode){
+  const upTxt = mode === 'kg'
+    ? 'Erhöhe beim nächsten Training das Gewicht um ca. 2,5–5 %.'
+    : mode === 'reps'
+    ? 'Steigere beim nächsten Training um 1–2 Wiederholungen pro Satz (oder nimm Zusatzgewicht).'
+    : 'Steigere beim nächsten Training die Zeit pro Satz um ca. 10–15 %.';
+  const t = {
+    build: '🔸 Aufbau-Phase\n\nNoch nicht alle 3 Sätze konstant: gleiches Gewicht, gleiche Wiederholungen und ähnliche Zeiten (max. ca. 1,5-fache Abweichung). Dranbleiben!',
+    ok: '✅ Konstant geschafft\n\nAlle 3 Sätze gleich stark absolviert. Schaffst du das 3× in Folge, empfiehlt die App die Steigerung (2-for-2-Regel / doppelte Progression).',
+    up: '⬆️ Zeit zu steigern!\n\n3× in Folge konstant geschafft. ' + upTxt
+  };
+  alert(t[k]);
+}
+
 // ---------- Workout session ----------
 function sessionTouch(){
   const p = page(); if(!p) return;
@@ -1307,6 +1383,7 @@ function circuitHTML(p){
           <div class="c-last">${lastTxt}</div>
           ${gearHTML(ex)}
         </div>
+        ${editMode ? '' : ratingHTML(ex)}
         ${editMode ? `
         <button class="icon-btn" onclick="moveExercise('${ex.id}',-1)">↑</button>
         <button class="icon-btn" onclick="moveExercise('${ex.id}',1)">↓</button>
@@ -1367,6 +1444,7 @@ function cardHTML(ex, linkedPrev, linkedNext, hasNext){
         <span class="total" id="total-${ex.id}">Gesamt: <b>${fmt(totalSec(ex))}</b></span>
         ${gearHTML(ex)}
       </div>
+      ${editMode ? '' : ratingHTML(ex)}
       ${editMode ? `
       <button class="icon-btn" onclick="moveExercise('${ex.id}',-1)">↑</button>
       <button class="icon-btn" onclick="moveExercise('${ex.id}',1)">↓</button>
